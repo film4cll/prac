@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <title>스파르타코딩클럽 | 부트스트랩 연습하기</title>
+    <meta property="og:title" content="myfirstproject" />
+    <meta property="og:description" content="myfirstservice" />
+    <meta property="og:image" content="{{ url_for('static', filename='ogimage.jpg') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        .calendar {
+            width: 500px;
+            height: 300px;
+        }
+
+        .button {
+            color: blue;
+            margin: auto;
+            display: block;
+        }
+
+        .wrap {
+            width: 500px;
+            margin: auto;
+        }
+
+        .table {
+            width: 500px;
+            margin: auto;
+        }
+
+        * {
+            font-family: 'Jua', sans-serif;
+        }
+
+        .rate {
+            color: blue;
+            font-size: small;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            rate();
+            orders();
+        });
+
+        function rate() {
+
+            $('#rate').empty()
+            $.ajax({
+                type: "GET",
+                url: "https://api.manana.kr/exchange/rate.json",
+                data: {},
+                success: function (response) {
+                    let date = response[1]['date']
+                    let rate = response[1]['rate']
+                    let temp_html = `<p> 달러-원환율 ${date} : ${rate}</p>`
+                    $('#rate').append(temp_html)
+                }
+            })
+        }
+
+        function hey() {
+            alert('주문이 완료되었습니다.!!!');
+            let name = $('#post-name').val()
+            let qty = $('#post-qty').val()
+            let address = $('#post-address').val()
+            let phone = $('#post-phone').val()
+
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {name_give: name, qty_give: qty, address_give: address, phone_give: phone},
+                success: function (response) { // 성공하면
+                    alert(response["msg"]);
+                    window.location.reload()
+                }
+            })
+        }
+
+        function orders() {
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    let orders = response['all_orders']
+                    for (let i = 0; i < orders.length; i++) {
+                        let name = orders[i]['name']
+                        let qty = orders[i]['qty']
+                        let address = orders[i]['address']
+                        let phone = orders[i]['phone']
+
+                        let temp_html = `<tr>
+                                            <th scope="row">${name}</th>
+                                            <td>${qty}</td>
+                                            <td>${address}</td>
+                                            <td>${phone}</td>
+                                        </tr>`
+
+                        $('#order-list').append(temp_html)
+                    }
+                }
+            })
+        }
+    </script>
+</head>
+
+<body>
+<div class="wrap">
+    <div>
+        <img class="calendar"
+             src="https://mblogthumb-phinf.pstatic.net/MjAxOTEyMDJfMjU2/MDAxNTc1MjQ5NzAyOTI5.HBvX_MxNyaMtyLgKQC-FEwsEaOGHBRZTjivJTI50eNIg.MBNnYdk5B_I18x0hEOoXXaVq1YSXfQKv-sR9D3bqoUQg.PNG.o_o9414/2020%EB%85%84_%EB%8B%AC%EB%A0%A5_%EC%B0%A1%EC%B0%A1001.png?type=w800"/>
+    </div>
+    <h2>새해달력 <span style="font-size: 15px">가격:1,000원/개</span></h2>
+    <p>무한도전 멤버들이 만든 특별한 새해 달력입니다. 구매하신 가격의 50%는 아이들의 교육지원을 위해 기부됩니다.</p>
+    <h2>주문하기 </h2>
+    <p id="rate" class="rate">달러-원환율</p>
+    <p>주문자 성함: <input id="post-name" type="name"/></p>
+    <div>
+        <label>수량</label>
+        <select id="post-qty">
+            <option selected>-- 수량을 선택하세요 --</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+    </div>
+    <p>주소: <input id="post-address" type="address"/></p>
+    <p>전화번호: <input id="post-phone" type="mobile"/></p>
+    <button onclick="hey()" class="button">주문하기</button>
+</div>
+<div>
+    <table id="order-list" class="table">
+        <thead>
+        <tr>
+            <th scope="col">이름</th>
+            <th scope="col">수량</th>
+            <th scope="col">주소</th>
+            <th scope="col">전화번호</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+</body>
+
+</html>
